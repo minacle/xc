@@ -1,9 +1,18 @@
 import Foundation
 
+private struct StandardErrorStream: TextOutputStream {
+
+    fileprivate func write(_ string: String) {
+        fputs(string, stderr)
+    }
+}
+
 private let xc = Xc.default
 
 guard !xc.xcodes.isEmpty
 else {
+    var standardError = StandardErrorStream()
+    print("No Xcode app found.", to: &standardError)
     exit(1)
 }
 
