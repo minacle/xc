@@ -7,7 +7,7 @@ else {
     exit(1)
 }
 
-private var arguments = ["-a", xc.xcodes[0].fullPath]
+private var arguments = ["-a", xc.xcodes[0].path]
 arguments.append(contentsOf: CommandLine.arguments[1...])
 
 Process.launchedProcess(launchPath: "/usr/bin/open", arguments: arguments)

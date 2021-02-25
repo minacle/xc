@@ -22,11 +22,12 @@ public final class Xc: NSObject {
         self._query.operationQueue = OperationQueue()
         let predicateString =
             String(format: "(%@ == %@) && (%@ == %@)",
-                   kMDItemContentType as NSString,
+                   NSMetadataItemContentTypeKey,
                    "'com.apple.application-bundle'",
-                   kMDItemCFBundleIdentifier as NSString,
+                   NSMetadataItemCFBundleIdentifierKey,
                    "'com.apple.dt.Xcode'")
         self._query.predicate = NSPredicate(fromMetadataQueryString: predicateString)
+        self._query.valueListAttributes = [NSMetadataItemPathKey]
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(_metadataQueryDidFinishGathering(_:)),
@@ -48,17 +49,16 @@ public final class Xc: NSObject {
                     continue
                 }
                 let _kMDItemAppStoreIsAppleSigned = "kMDItemAppStoreIsAppleSigned"
-                let _kMDItemFSName = "kMDItemFSName"
-                let _kMDItemVersion = kMDItemVersion as NSString as String
-                let attributes = (item.values(forAttributes: [_kMDItemAppStoreIsAppleSigned, _kMDItemFSName, _kMDItemVersion, _kMDItemVersion]) ?? [:]).mapValues({$0 as AnyObject})
+                let attributes = (item.values(forAttributes: [_kMDItemAppStoreIsAppleSigned, NSMetadataItemFSNameKey, NSMetadataItemVersionKey, NSMetadataItemPathKey]) ?? [:]).mapValues({$0 as AnyObject})
                 let isAppleSigned = unsafeDowncast(attributes[_kMDItemAppStoreIsAppleSigned]!, to: NSNumber.self).boolValue
-                let fsName = unsafeDowncast(attributes[_kMDItemFSName]!, to: NSString.self) as String
-                let version = Version(string: unsafeDowncast(attributes[_kMDItemVersion]!, to: NSString.self) as String)
+                let fsName = unsafeDowncast(attributes[NSMetadataItemFSNameKey]!, to: NSString.self) as String
+                let version = Version(string: unsafeDowncast(attributes[NSMetadataItemVersionKey]!, to: NSString.self) as String)
+                let path = unsafeDowncast(attributes[NSMetadataItemPathKey]!, to: NSString.self) as String
                 guard isAppleSigned
                 else {
                     continue
                 }
-                apps.append(Xcode(name: fsName, version: version))
+                apps.append(Xcode(name: fsName, path: path, version: version))
             }
             apps.sort(by: {$0.build > $1.build})
             self._xcodes = apps
