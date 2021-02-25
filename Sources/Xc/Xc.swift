@@ -28,6 +28,10 @@ public final class Xc: NSObject {
                    "'com.apple.dt.Xcode'")
         self._query.predicate = NSPredicate(fromMetadataQueryString: predicateString)
         self._query.valueListAttributes = [NSMetadataItemPathKey]
+        self.reload()
+    }
+
+    public func reload() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(_metadataQueryDidFinishGathering(_:)),
