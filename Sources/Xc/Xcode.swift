@@ -24,6 +24,14 @@ public struct Xcode {
     }
 }
 
+extension Xcode: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.name)
+        hasher.combine(self.path)
+    }
+}
+
 extension Xcode {
 
     public enum LicenseType: String, CaseIterable {

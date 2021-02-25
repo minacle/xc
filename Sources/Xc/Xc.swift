@@ -11,9 +11,9 @@ public final class Xc: NSObject {
     private let _query = NSMetadataQuery()
     private let _dsema = DispatchSemaphore(value: 0)
 
-    private var _xcodes = [Xcode]()
+    private var _xcodes = Set<Xcode>()
 
-    public var xcodes: [Xcode] {
+    public var xcodes: Set<Xcode> {
         return self._xcodes
     }
 
@@ -64,8 +64,7 @@ public final class Xc: NSObject {
                 }
                 apps.append(Xcode(name: fsName, path: path, version: version))
             }
-            apps.sort(by: {$0.build > $1.build})
-            self._xcodes = apps
+            self._xcodes = Set(apps)
             self._dsema.signal()
         }
     }

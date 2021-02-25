@@ -7,7 +7,9 @@ else {
     exit(1)
 }
 
-private var arguments = ["-a", xc.xcodes[0].path]
+let xcodes = xc.xcodes.sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
+
+private var arguments = ["-a", xcodes[0].path]
 arguments.append(contentsOf: CommandLine.arguments[1...])
 
 Process.launchedProcess(launchPath: "/usr/bin/open", arguments: arguments)
