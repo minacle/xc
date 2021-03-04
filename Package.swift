@@ -12,10 +12,19 @@ let package = Package(
             name: "xc",
             targets: ["Xc"]),
     ],
+    dependencies: [
+        .package(
+            url: "https://github.com/apple/swift-argument-parser",
+            .upToNextMinor(from: "0.3.2")),
+    ],
     targets: [
         .target(
             name: "Xc",
-            dependencies: []),
+            dependencies: [
+                .product(
+                    name: "ArgumentParser",
+                    package: "swift-argument-parser"),
+            ]),
     ],
     swiftLanguageVersions: [
         .v5,
