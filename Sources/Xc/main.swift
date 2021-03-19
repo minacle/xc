@@ -76,14 +76,8 @@ struct Main: ParsableCommand {
         process.standardInput = fileHandleWithNullDevice
         process.standardOutput = fileHandleWithNullDevice
         process.standardError = fileHandleWithNullDevice
-        if #available(macOS 10.13, *) {
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open", isDirectory: false)
-            try process.run()
-        }
-        else {
-            process.launchPath = "/usr/bin/open"
-            process.launch()
-        }
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open", isDirectory: false)
+        try process.run()
     }
 }
 
