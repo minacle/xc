@@ -18,33 +18,30 @@ mint install minacle/xc
 
 ## usage
 
-### run most recent version of Xcode
-
-```sh
-xc
+```
+xc [-r|-gm|--release-only] [-l|--list] [<paths> ...]
+xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]
+xc [-h|--help]
 ```
 
-### open Swift package directory in most recent version of Xcode
+### arguments
 
-```sh
-xc YourSwiftPackage
-```
+- `<paths>`  
+  Path list to be opened.  
+  Swift packages are can be selected by package root directory.  
+  Open as workspace if .xcodeproj and/or .xcworkspace bundle selected.  
+  Otherwise selected file will be opened as independent file.
 
-…or if you're already in the directory, type
+### options
 
-```sh
-xc .
-```
-
-### open xcodeproj or xcworkspace in most recent version of Xcode
-
-```sh
-xc YourProject.xcodeproj
-```
-
-```sh
-xc YourWorkspace.xcworkspace
-```
+- `-b`|`-beta`|`--allow-beta`  
+  Allow beta version.
+- `-r`|`-gm`|`--release-only`  
+  Disallow beta version. _(default)_
+- `-l`|`--list`  
+  List every found Xcode apps.
+- `-h`|`--help`  
+  Show help information.
 
 ## copyright
 
