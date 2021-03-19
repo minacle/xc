@@ -5,12 +5,16 @@ import PackageDescription
 let package = Package(
     name: "Xc",
     platforms: [
-        .macOS(.v10_10),
+        .macOS(.v10_15),
     ],
     products: [
         .executable(
             name: "xc",
             targets: ["Xc"]),
+        .library(
+            name: "XcKit",
+            type: .static,
+            targets: ["XcKit"]),
     ],
     dependencies: [
         .package(
@@ -24,7 +28,9 @@ let package = Package(
                 .product(
                     name: "ArgumentParser",
                     package: "swift-argument-parser"),
+                .target(name: "XcKit"),
             ]),
+        .target(name: "XcKit"),
     ],
     swiftLanguageVersions: [
         .v5,

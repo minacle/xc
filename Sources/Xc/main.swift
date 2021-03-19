@@ -1,23 +1,23 @@
 import ArgumentParser
 import Foundation
+import XcKit
 
-private struct StandardErrorStream: TextOutputStream {
+enum XcError: String, Error {
 
-    fileprivate func write(_ string: String) {
-        fputs(string, stderr)
+    case noXcodeAppFound =
+        "No Xcode app found."
+}
+
+extension XcError {
+
+    var localizedDescription: String {
+        return self.rawValue
     }
 }
 
-private struct NoXcodeAppFoundError: Error {
+struct Main: ParsableCommand {
 
-    fileprivate var localizedDescription: String {
-        return "No Xcode app found."
-    }
-}
-
-private struct Main: ParsableCommand {
-
-    fileprivate enum Flags: EnumerableFlag {
+    enum Flags: EnumerableFlag {
 
         case allowBeta
         case releaseOnly
@@ -26,12 +26,12 @@ private struct Main: ParsableCommand {
     @Flag(
         exclusivity: .exclusive,
         help: "Allow or disallow beta version.")
-    fileprivate var flag: Flags = .releaseOnly
+    var flag: Flags = .releaseOnly
 
     @Flag(
         name: [.customShort("l"), .customLong("list")],
         help: "List every found Xcode apps.")
-    fileprivate var showList = false
+    var showList = false
 
     @Argument(
         parsing: .remaining,
@@ -42,13 +42,13 @@ private struct Main: ParsableCommand {
                         Open as workspace if .xcodeproj and/or .xcworkspace bundle selected.
                         Otherwise selected file will be opened as independent file.
                         """))
-    fileprivate var paths: [String] = []
+    var paths: [String] = []
 
-    fileprivate func run() throws {
+    func run() throws {
         let xc = Xc.default
         guard !xc.xcodes.isEmpty
         else {
-            throw NoXcodeAppFoundError()
+            throw XcError.noXcodeAppFound
         }
         let xcodes =
             xc.xcodes
@@ -89,7 +89,7 @@ private struct Main: ParsableCommand {
 
 extension Main {
 
-    fileprivate static var configuration =
+    static var configuration =
         CommandConfiguration(
             commandName: "xc",
             abstract: "Run most recent version of Xcode app on the machine.")
@@ -97,7 +97,7 @@ extension Main {
 
 extension Main.Flags {
 
-    fileprivate static func name(for value: Self) -> NameSpecification {
+    static func name(for value: Self) -> NameSpecification {
         switch value {
         case .allowBeta:
             return [

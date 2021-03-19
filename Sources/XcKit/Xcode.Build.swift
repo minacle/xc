@@ -1,64 +1,69 @@
 import Foundation
 
-public struct Build {
+extension Xcode {
 
-    public var major: UInt
-    public var minor: Minor
-    public var patch: UInt
-    public var revision: Revision?
+    public struct Build {
 
-    public init(major: UInt = 1, minor: Minor = .a, patch: UInt = 1, revision: Revision? = nil) {
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-        self.revision = revision
-    }
+        public var major: UInt
+        public var minor: Minor
+        public var patch: UInt
+        public var revision: Revision?
 
-    public init(_ major: UInt, _ minor: Minor = .a, _ patch: UInt = 1, _ revision: Revision? = nil) {
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-        self.revision = revision
-    }
-
-    public init(string: String) {
-        let regex = try! NSRegularExpression(pattern: "^([1-9][0-9]*)([A-Z])([1-9][0-9]*)([a-z])?$")
-        let nsString = string as NSString
-        if let match = regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
-            var range: NSRange
-            range = match.range(at: 1)
-            if range.location != NSNotFound {
-                self.major = UInt(nsString.substring(with: range))!
-            }
-            else {
-                self.major = 1
-            }
-            range = match.range(at: 2)
-            if range.location != NSNotFound {
-                self.minor = Minor(rawValue: nsString.substring(with: range).first!)!
-            }
-            else {
-                self.minor = .a
-            }
-            range = match.range(at: 3)
-            if range.location != NSNotFound {
-                self.patch = UInt(nsString.substring(with: range))!
-            }
-            else {
-                self.patch = 1
-            }
-            range = match.range(at: 4)
-            if range.location != NSNotFound {
-                self.revision = Revision(rawValue: nsString.substring(with: range).first!)!
-            }
+        public init(major: UInt = 1, minor: Minor = .a, patch: UInt = 1, revision: Revision? = nil) {
+            self.major = major
+            self.minor = minor
+            self.patch = patch
+            self.revision = revision
         }
-        else {
-            self = .init()
+
+        public init(_ major: UInt, _ minor: Minor = .a, _ patch: UInt = 1, _ revision: Revision? = nil) {
+            self.major = major
+            self.minor = minor
+            self.patch = patch
+            self.revision = revision
+        }
+
+        private static let _regex =
+            try! NSRegularExpression(pattern: "^([1-9][0-9]*)([A-Z])([1-9][0-9]*)([a-z])?$")
+
+        public init(string: String) {
+            let nsString = string as NSString
+            if let match = Self._regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
+                var range: NSRange
+                range = match.range(at: 1)
+                if range.location != NSNotFound {
+                    self.major = UInt(nsString.substring(with: range))!
+                }
+                else {
+                    self.major = 1
+                }
+                range = match.range(at: 2)
+                if range.location != NSNotFound {
+                    self.minor = Minor(rawValue: nsString.substring(with: range).first!)!
+                }
+                else {
+                    self.minor = .a
+                }
+                range = match.range(at: 3)
+                if range.location != NSNotFound {
+                    self.patch = UInt(nsString.substring(with: range))!
+                }
+                else {
+                    self.patch = 1
+                }
+                range = match.range(at: 4)
+                if range.location != NSNotFound {
+                    self.revision = Revision(rawValue: nsString.substring(with: range).first!)!
+                }
+            }
+            else {
+                self = .init()
+            }
         }
     }
 }
 
-extension Build: Equatable {
+extension Xcode.Build: Equatable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         return
@@ -77,7 +82,7 @@ extension Build: Equatable {
     }
 }
 
-extension Build: Comparable {
+extension Xcode.Build: Comparable {
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
         if lhs.major == rhs.major {
@@ -106,7 +111,7 @@ extension Build: Comparable {
     }
 }
 
-extension Build: CustomStringConvertible {
+extension Xcode.Build: CustomStringConvertible {
 
     public var description: String {
         if let revision = self.revision {
@@ -118,7 +123,14 @@ extension Build: CustomStringConvertible {
     }
 }
 
-extension Build {
+extension Xcode.Build: CustomDebugStringConvertible {
+
+    public var debugDescription: String {
+        return self.description
+    }
+}
+
+extension Xcode.Build {
 
     public enum Minor: Character {
 
@@ -151,17 +163,17 @@ extension Build {
     }
 }
 
-extension Build.Minor: CaseIterable {
+extension Xcode.Build.Minor: CaseIterable {
 }
 
-extension Build.Minor: Comparable {
+extension Xcode.Build.Minor: Comparable {
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
         return Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
     }
 }
 
-extension Build {
+extension Xcode.Build {
 
     public enum Revision: Character {
 
@@ -194,10 +206,10 @@ extension Build {
     }
 }
 
-extension Build.Revision: CaseIterable {
+extension Xcode.Build.Revision: CaseIterable {
 }
 
-extension Build.Revision: Comparable {
+extension Xcode.Build.Revision: Comparable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue == rhs.rawValue
@@ -224,7 +236,7 @@ extension Build.Revision: Comparable {
     }
 }
 
-public func <(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
+public func <(lhs: Xcode.Build.Revision?, rhs: Xcode.Build.Revision?) -> Bool {
     guard
         let lhs = lhs,
         let rhs = rhs
@@ -234,7 +246,7 @@ public func <(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
     return lhs < rhs
 }
 
-public func <=(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
+public func <=(lhs: Xcode.Build.Revision?, rhs: Xcode.Build.Revision?) -> Bool {
     guard
         let lhs = lhs,
         let rhs = rhs
@@ -244,7 +256,7 @@ public func <=(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
     return lhs <= rhs
 }
 
-public func >(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
+public func >(lhs: Xcode.Build.Revision?, rhs: Xcode.Build.Revision?) -> Bool {
     guard
         let lhs = lhs,
         let rhs = rhs
@@ -254,7 +266,7 @@ public func >(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
     return lhs > rhs
 }
 
-public func >=(lhs: Build.Revision?, rhs: Build.Revision?) -> Bool {
+public func >=(lhs: Xcode.Build.Revision?, rhs: Xcode.Build.Revision?) -> Bool {
     guard
         let lhs = lhs,
         let rhs = rhs
