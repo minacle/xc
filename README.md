@@ -18,11 +18,9 @@ mint install minacle/xc
 
 ## usage
 
-```
-xc [-r|-gm|--release-only] [-l|--list] [<paths> ...]
-xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]
-xc [-h|--help]
-```
+    xc [-r|-gm|--release-only] [-l|--list] [<paths> ...]  
+    xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]  
+    xc [-h|--help]
 
 ### arguments
 
