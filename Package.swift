@@ -31,6 +31,9 @@ let package = Package(
                 .target(name: "XcKit"),
             ]),
         .target(name: "XcKit"),
+        .testTarget(
+            name: "XcKitTests",
+            dependencies: ["XcKit"]),
     ],
     swiftLanguageVersions: [
         .v5,
