@@ -139,14 +139,24 @@ extension Xc {
                     }
                     let _kMDItemAppStoreIsAppleSigned = "kMDItemAppStoreIsAppleSigned"
                     let attributes = (item.values(forAttributes: [_kMDItemAppStoreIsAppleSigned, NSMetadataItemFSNameKey, NSMetadataItemVersionKey, NSMetadataItemPathKey]) ?? [:]).mapValues({$0 as AnyObject})
-                    let isAppleSigned = unsafeDowncast(attributes[_kMDItemAppStoreIsAppleSigned]!, to: NSNumber.self).boolValue
-                    guard isAppleSigned
+                    if let _isAppleSigned = attributes[_kMDItemAppStoreIsAppleSigned] {
+                        guard unsafeDowncast(_isAppleSigned, to: NSNumber.self).boolValue
+                        else {
+                            continue
+                        }
+                    }
+                    else {
+                        continue
+                    }
+                    let version: Xcode.Version
+                    if let _version = attributes[NSMetadataItemVersionKey] {
+                        version = .init(string: unsafeDowncast(_version, to: NSString.self) as String)
+                    }
                     else {
                         continue
                     }
                     let fsName = unsafeDowncast(attributes[NSMetadataItemFSNameKey]!, to: NSString.self) as String
                     let path = unsafeDowncast(attributes[NSMetadataItemPathKey]!, to: NSString.self) as String
-                    let version = Xcode.Version(string: unsafeDowncast(attributes[NSMetadataItemVersionKey]!, to: NSString.self) as String)
                     xcodes.update(with: Xcode(name: fsName, path: path, version: version))
                 }
                 self?.owner._xcodes = xcodes
