@@ -9,6 +9,7 @@ public final class Xc {
 
     private let _query = NSMetadataQuery()
     private let _dsema = DispatchSemaphore(value: 0)
+    private lazy var _observer = _Observer(owner: self)
     private var _subscribers = Set<AnyCancellable>(minimumCapacity: 1)
     private var _xcodesPublisher: AnyPublisher<Set<Xcode>, Never>?
 
@@ -36,12 +37,14 @@ public final class Xc {
             self._query.operationQueue = operationQueue
         }
         if reload {
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(_metadataQueryDidFinishGathering(_:)),
-                name: .NSMetadataQueryDidFinishGathering, object: nil)
-            self._query.operationQueue!.addOperation {
-                self._query.start()
+            _defaultNotificationCenter.addObserver(
+                self._observer,
+                selector: #selector(self._observer.metadataQueryDidFinishGathering(_:)),
+                name: .NSMetadataQueryDidFinishGathering,
+                object: nil)
+            let query = self._query
+            query.operationQueue.unsafelyUnwrapped.addOperation {
+                query.start()
             }
             self._dsema.wait()
         }
@@ -55,9 +58,9 @@ public final class Xc {
     public func reload() -> AnyPublisher<Set<Xcode>, Never> {
         if self._subscribers.isEmpty {
             let metadataQueryDidFinishGatheringNotificationPublisher =
-                NotificationCenter.default.publisher(for: .NSMetadataQueryDidFinishGathering)
+                _defaultNotificationCenter.publisher(for: .NSMetadataQueryDidFinishGathering)
             metadataQueryDidFinishGatheringNotificationPublisher
-            .sink(receiveValue: self._metadataQueryDidFinishGathering(_:))
+            .sink(receiveValue: self._observer.metadataQueryDidFinishGathering(_:))
             .store(in: &self._subscribers)
         }
         let xcodesPublisher: AnyPublisher<Set<Xcode>, Never>
@@ -68,8 +71,9 @@ public final class Xc {
             let futurePublisher =
                 Future<Set<Xcode>, Never> {
                     (promise) in
-                    if !self._query.isStarted {
-                        self._query.operationQueue!.addOperation {
+                    let query = self._query
+                    if !query.isStarted {
+                        query.operationQueue.unsafelyUnwrapped.addOperation {
                             self._query.start()
                         }
                     }
@@ -89,39 +93,67 @@ public final class Xc {
         return xcodesPublisher
     }
 
-    @objc
-    private func _metadataQueryDidFinishGathering(_ notification: Notification) {
-        NotificationCenter.default.removeObserver(self, name: notification.name, object: nil)
-        self._query.operationQueue!.addOperation {
-            var xcodes = Set<Xcode>()
-            for result in self._query.results {
-                guard let item = result as? NSMetadataItem
-                else {
-                    continue
-                }
-                let _kMDItemAppStoreIsAppleSigned = "kMDItemAppStoreIsAppleSigned"
-                let attributes = (item.values(forAttributes: [_kMDItemAppStoreIsAppleSigned, NSMetadataItemFSNameKey, NSMetadataItemVersionKey, NSMetadataItemPathKey]) ?? [:]).mapValues({$0 as AnyObject})
-                let isAppleSigned = unsafeDowncast(attributes[_kMDItemAppStoreIsAppleSigned]!, to: NSNumber.self).boolValue
-                guard isAppleSigned
-                else {
-                    continue
-                }
-                let fsName = unsafeDowncast(attributes[NSMetadataItemFSNameKey]!, to: NSString.self) as String
-                let path = unsafeDowncast(attributes[NSMetadataItemPathKey]!, to: NSString.self) as String
-                let version = Xcode.Version(string: unsafeDowncast(attributes[NSMetadataItemVersionKey]!, to: NSString.self) as String)
-                xcodes.insert(Xcode(name: fsName, path: path, version: version))
-            }
-            self._xcodes = xcodes
-            self._dsema.signal()
-        }
-    }
-
     deinit {
+        _defaultNotificationCenter.removeObserver(
+            self._observer,
+            name: nil,
+            object: nil)
         self._query.stop()
-        NotificationCenter.default.removeObserver(self, name: nil, object: nil)
-        self._subscribers.forEach({$0.cancel()})
+        self._subscribers.removeAll()
         self._xcodesPublisher = nil
     }
 }
 
 private let _defaultXcInstance = Xc(reload: true)
+
+extension Xc {
+
+    private final class _Observer {
+
+        private unowned let owner: Xc
+
+        fileprivate init(owner: Xc) {
+            self.owner = owner
+        }
+
+        @objc
+        fileprivate func metadataQueryDidFinishGathering(_ notification: Notification) {
+            let query = self.owner._query
+            guard query.isStarted && !query.isGathering
+            else {
+                return
+            }
+            query.stop()
+            _defaultNotificationCenter.removeObserver(
+                self,
+                name: notification.name,
+                object: nil)
+            let dsema = self.owner._dsema
+            query.operationQueue.unsafelyUnwrapped.addOperation {
+                [weak self] in
+                var xcodes = Set<Xcode>()
+                for result in query.results {
+                    guard let item = result as? NSMetadataItem
+                    else {
+                        continue
+                    }
+                    let _kMDItemAppStoreIsAppleSigned = "kMDItemAppStoreIsAppleSigned"
+                    let attributes = (item.values(forAttributes: [_kMDItemAppStoreIsAppleSigned, NSMetadataItemFSNameKey, NSMetadataItemVersionKey, NSMetadataItemPathKey]) ?? [:]).mapValues({$0 as AnyObject})
+                    let isAppleSigned = unsafeDowncast(attributes[_kMDItemAppStoreIsAppleSigned]!, to: NSNumber.self).boolValue
+                    guard isAppleSigned
+                    else {
+                        continue
+                    }
+                    let fsName = unsafeDowncast(attributes[NSMetadataItemFSNameKey]!, to: NSString.self) as String
+                    let path = unsafeDowncast(attributes[NSMetadataItemPathKey]!, to: NSString.self) as String
+                    let version = Xcode.Version(string: unsafeDowncast(attributes[NSMetadataItemVersionKey]!, to: NSString.self) as String)
+                    xcodes.update(with: Xcode(name: fsName, path: path, version: version))
+                }
+                self?.owner._xcodes = xcodes
+                dsema.signal()
+            }
+        }
+    }
+}
+
+private let _defaultNotificationCenter = NotificationCenter.default
