@@ -148,9 +148,12 @@ extension Xc {
                     else {
                         continue
                     }
-                    let version: Xcode.Version
+                    var version: Xcode.Version
                     if let _version = attributes[NSMetadataItemVersionKey] {
                         version = .init(string: unsafeDowncast(_version, to: NSString.self) as String)
+                        if version.patch == nil {
+                            version.patch = 0
+                        }
                     }
                     else {
                         continue
