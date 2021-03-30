@@ -1,3 +1,5 @@
+import Foundation
+
 extension Xcode {
 
     public struct Version {
@@ -18,12 +20,34 @@ extension Xcode {
             self.patch = patch
         }
 
-        public init(string: String) {
-            let components = "\(string)..".components(separatedBy: ".")
-            self.major = UInt(components[0]) ?? .min
-            self.minor = UInt(components[1]) ?? .min
-            if !components[2].isEmpty {
-                self.patch = UInt(components[2]) ?? .min
+        private static let _regex =
+            try! NSRegularExpression(pattern: "^(\\d+)\\.(\\d+)(?:\\.(\\d+))?$")
+
+        public init?(string: String) {
+            let nsString = string as NSString
+            if let match = Self._regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
+                var range: NSRange
+                range = match.range(at: 1)
+                if range.location != NSNotFound {
+                    self.major = UInt(nsString.substring(with: range))!
+                }
+                else {
+                    return nil
+                }
+                range = match.range(at: 2)
+                if range.location != NSNotFound {
+                    self.minor = UInt(nsString.substring(with: range))!
+                }
+                else {
+                    return nil
+                }
+                range = match.range(at: 3)
+                if range.location != NSNotFound {
+                    self.patch = UInt(nsString.substring(with: range))!
+                }
+            }
+            else {
+                return nil
             }
         }
     }

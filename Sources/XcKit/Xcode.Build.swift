@@ -26,7 +26,7 @@ extension Xcode {
         private static let _regex =
             try! NSRegularExpression(pattern: "^([1-9][0-9]*)([A-Z])([1-9][0-9]*)([a-z])?$")
 
-        public init(string: String) {
+        public init?(string: String) {
             let nsString = string as NSString
             if let match = Self._regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
                 var range: NSRange
@@ -35,21 +35,21 @@ extension Xcode {
                     self.major = UInt(nsString.substring(with: range))!
                 }
                 else {
-                    self.major = 1
+                    return nil
                 }
                 range = match.range(at: 2)
                 if range.location != NSNotFound {
                     self.minor = Minor(rawValue: nsString.substring(with: range).first!)!
                 }
                 else {
-                    self.minor = .a
+                    return nil
                 }
                 range = match.range(at: 3)
                 if range.location != NSNotFound {
                     self.patch = UInt(nsString.substring(with: range))!
                 }
                 else {
-                    self.patch = 1
+                    return nil
                 }
                 range = match.range(at: 4)
                 if range.location != NSNotFound {
@@ -57,7 +57,7 @@ extension Xcode {
                 }
             }
             else {
-                self = .init()
+                return nil
             }
         }
     }

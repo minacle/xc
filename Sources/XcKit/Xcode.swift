@@ -8,17 +8,25 @@ public struct Xcode {
     public var build: Build
     public var licenseType: LicenseType
 
-    public init(name: String, path: String, version: Version? = nil) {
+    public init?(name: String, path: String, version: Version? = nil) {
         self.name = name
         self.path = path
         let versionPList = (try? PropertyListSerialization.propertyList(from: Data(contentsOf: URL(fileURLWithPath: "\(self.path)/Contents/version.plist")), format: nil) as? [String: Any]) ?? [:]
-        if let version = version {
+        if var version = version {
+            if version.patch == nil {
+                version.patch = 0
+            }
             self.version = version
         }
         else {
-            self.version = .init(string: versionPList["CFBundleShortVersionString"] as? String ?? "")
+            return nil
         }
-        self.build = .init(string: versionPList["ProductBuildVersion"] as? String ?? "")
+        if let build = Build(string: versionPList["ProductBuildVersion"] as? String ?? "") {
+            self.build = build
+        }
+        else {
+            return nil
+        }
         let licenseInfoPList = (try? PropertyListSerialization.propertyList(from: Data(contentsOf: URL(fileURLWithPath: "\(self.path)/Contents/Resources/LicenseInfo.plist")), format: nil) as? [String: Any]) ?? [:]
         self.licenseType = .init(rawValue: licenseInfoPList["licenseType"] as? String ?? "")
     }

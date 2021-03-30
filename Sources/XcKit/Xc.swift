@@ -150,9 +150,14 @@ extension Xc {
                     }
                     var version: Xcode.Version
                     if let _version = attributes[NSMetadataItemVersionKey] {
-                        version = .init(string: unsafeDowncast(_version, to: NSString.self) as String)
-                        if version.patch == nil {
-                            version.patch = 0
+                        if var _version = Xcode.Version(string: unsafeDowncast(_version, to: NSString.self) as String) {
+                            if _version.patch == nil {
+                                _version.patch = 0
+                            }
+                            version = _version
+                        }
+                        else {
+                            continue
                         }
                     }
                     else {
@@ -160,7 +165,9 @@ extension Xc {
                     }
                     let fsName = unsafeDowncast(attributes[NSMetadataItemFSNameKey]!, to: NSString.self) as String
                     let path = unsafeDowncast(attributes[NSMetadataItemPathKey]!, to: NSString.self) as String
-                    xcodes.update(with: Xcode(name: fsName, path: path, version: version))
+                    if let xcode = Xcode(name: fsName, path: path, version: version) {
+                        xcodes.update(with: xcode)
+                    }
                 }
                 self?.owner._xcodes = xcodes
                 dsema.signal()
