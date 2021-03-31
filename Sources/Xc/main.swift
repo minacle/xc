@@ -34,9 +34,9 @@ struct Main: ParsableCommand {
         enum Operator: String, CaseIterable {
 
             case equalTo = "=="
-            case greatherThanOrEqualTo = ">="
+            case greaterThanOrEqualTo = ">="
             case approximatelyGreaterThanOrEqualTo = "~>"
-            case greatherThan = ">"
+            case greaterThan = ">"
             case lessThan = "<"
             case lessThanOrEqualTo = "<="
         }
@@ -180,12 +180,12 @@ struct Main: ParsableCommand {
                         switch `operator` {
                         case .equalTo:
                             return $0.build == build
-                        case .greatherThanOrEqualTo:
+                        case .greaterThanOrEqualTo:
                             return $0.build >= build
                         case .approximatelyGreaterThanOrEqualTo:
                             // not implemented
                             return false
-                        case .greatherThan:
+                        case .greaterThan:
                             return $0.build > build
                         case .lessThan:
                             return $0.build > build
@@ -206,11 +206,11 @@ struct Main: ParsableCommand {
                         switch `operator` {
                         case .equalTo:
                             return $0.version == version
-                        case .greatherThanOrEqualTo:
+                        case .greaterThanOrEqualTo:
                             return $0.version >= version
                         case .approximatelyGreaterThanOrEqualTo:
                             return $0.version ~> version
-                        case .greatherThan:
+                        case .greaterThan:
                             return $0.version > version
                         case .lessThan:
                             return $0.version > version
