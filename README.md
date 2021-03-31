@@ -1,6 +1,6 @@
 # xc
 
-The best command to run most recent version of Xcode app on your machine.
+The best command to run Xcode app what you want.
 
 ## distinction
 
@@ -19,7 +19,9 @@ mint install minacle/xc
 ## usage
 
     xc [-r|-gm|--release-only] [-l|--list] [<paths> ...]  
-    xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]  
+    xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]
+    xc [-r|-gm|--release-only] [-s|--specify] [<paths> ...]  
+    xc [-b|-beta|--allow-beta] [-s|--specify] [<paths> ...]
     xc [-h|--help]
 
 ### arguments
@@ -38,6 +40,12 @@ mint install minacle/xc
   Disallow beta version. _(default)_
 - `-l`|`--list`  
   List every found Xcode apps.
+- `-s <specifier>`|`--specify` `<specifier>`
+  Specify the build or version of Xcode to run.
+  To specify build 11E801a (for Xcode 11.7 GM), send "11E801a".
+  To specify version 12.0.1 (for Xcode 12A7300 GM), send "12.0.1".
+  To specify most recent version starts with 11, send "~>11.0".
+  To specify most recent version starts with 8.3, send "~>8.3.0".
 - `-h`|`--help`  
   Show help information.
 
