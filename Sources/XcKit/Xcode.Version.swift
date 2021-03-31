@@ -101,7 +101,8 @@ extension Xcode.Version {
                     // 1.1.c ~> 1.1.z
                     return lhs.patch.unsafelyUnwrapped >= rhs.patch.unsafelyUnwrapped
                 }
-                // 1.b.c ~> 1.y.z
+                // 1.0.c ~> 1.1.z
+                // 1.2.c ~> 1.1.z
                 return false
             }
             // 1.b ~> 1.1.z
