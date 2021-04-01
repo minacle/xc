@@ -51,7 +51,7 @@ struct Main: ParsableCommand {
         init(expressionString string: String) {
             var string = string
             var `operator`: Operator?
-            for _operator in Operator.allCases {
+            for _operator in Operator.allCases.sorted(by: {$0.rawValue.count > $1.rawValue.count}) {
                 let rawValue = _operator.rawValue
                 if string.hasPrefix(rawValue) {
                     `operator` = _operator
