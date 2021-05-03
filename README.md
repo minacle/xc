@@ -1,5 +1,7 @@
 # xc
 
+![$ xc](https://repository-images.githubusercontent.com/341888512/1b9ed300-ac65-11eb-93ab-f4ff98aa9ac7)
+
 The best command to run Xcode app what you want.
 
 ## distinction
@@ -18,10 +20,8 @@ mint install minacle/xc
 
 ## usage
 
-    xc [-r|-gm|--release-only] [-l|--list] [<paths> ...]
-    xc [-b|-beta|--allow-beta] [-l|--list] [<paths> ...]
-    xc [-r|-gm|--release-only] [-s|--specify] [<paths> ...]
-    xc [-b|-beta|--allow-beta] [-s|--specify] [<paths> ...]
+    xc [-r|-gm|--release-only] [-l|--list] [-s|--specify <specifier>] [<paths> ...]
+    xc [-b|-beta|--allow-beta] [-l|--list] [-s|--specify <specifier>] [<paths> ...]
     xc [-h|--help]
 
 ### arguments
@@ -40,7 +40,7 @@ mint install minacle/xc
   Disallow beta version. _(default)_
 - `-l`|`--list`  
   List every found Xcode apps.
-- `-s <specifier>`|`--specify` `<specifier>`  
+- `-s <specifier>`|`--specify <specifier>`  
   Specify the build or version of Xcode to run.  
   To specify build 11E801a (for Xcode 11.7 GM), send `11E801a`.  
   To specify version 12.0.1 (for Xcode 12A7300 GM), send `12.0.1`.  
