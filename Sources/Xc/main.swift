@@ -127,7 +127,7 @@ struct Main: ParsableCommand {
             xc.xcodes
             .filter({self.flag == .releaseOnly ? $0.licenseType == .gm : true})
         if self.showList {
-            for xcode in xcodes {
+            for xcode in xcodes.sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version}) {
                 print(xcode.name)
                 if case .gm = xcode.licenseType {
                     print("  Version \(xcode.version)", "(\(xcode.build))")
