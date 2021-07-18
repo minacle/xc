@@ -234,6 +234,26 @@ extension Xcode.Build.Revision: Comparable {
         }
         return lhs < rhs
     }
+
+    public static func >(lhs: Self, rhs: Self) -> Bool {
+        return Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
+    }
+
+    public static func >(lhs: Self?, rhs: Self) -> Bool {
+        guard let lhs = lhs
+        else {
+            return true
+        }
+        return lhs > rhs
+    }
+
+    public static func >(lhs: Self, rhs: Self?) -> Bool {
+        guard let rhs = rhs
+        else {
+            return false
+        }
+        return lhs > rhs
+    }
 }
 
 public func <(lhs: Xcode.Build.Revision?, rhs: Xcode.Build.Revision?) -> Bool {
