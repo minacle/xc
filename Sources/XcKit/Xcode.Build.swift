@@ -101,7 +101,7 @@ extension Xcode.Build: Comparable {
         if lhs.major == rhs.major {
             if lhs.minor == rhs.minor {
                 if lhs.patch == rhs.patch {
-                    return lhs.revision < rhs.revision
+                    return lhs.revision > rhs.revision
                 }
                 return lhs.patch > rhs.patch
             }
