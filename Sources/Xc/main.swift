@@ -123,9 +123,73 @@ struct Main: ParsableCommand {
         else {
             throw XcError.noXcodeAppFound
         }
-        let xcodes =
+        var xcodes: [Xcode] =
             xc.xcodes
             .filter({self.flag == .releaseOnly ? $0.licenseType == .gm : true})
+        switch self.specifier {
+        case .nil:
+            if !self.showList {
+                xcodes.sort(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
+            }
+        case .error(let error):
+            throw error
+        case .build(let build):
+            xcodes = xcodes.filter({$0.build == build})
+            if !self.showList {
+                xcodes.sort(by: {$0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build})
+            }
+        case .version(let version):
+            xcodes = xcodes.filter({$0.version == version})
+            if !self.showList {
+                xcodes.sort(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
+            }
+        case .operatorAndBuild(let `operator`, let build):
+            // `~>` operator for Version.Build is not implemented yet
+            guard `operator` != .approximatelyGreaterThanOrEqualTo
+            else {
+                throw XcError.operationNotImplemented
+            }
+            xcodes = xcodes.filter {
+                switch `operator` {
+                case .equalTo:
+                    return $0.build == build
+                case .greaterThanOrEqualTo:
+                    return $0.build >= build
+                case .approximatelyGreaterThanOrEqualTo:
+                    // not implemented
+                    return false
+                case .greaterThan:
+                    return $0.build > build
+                case .lessThan:
+                    return $0.build > build
+                case .lessThanOrEqualTo:
+                    return $0.build <= build
+                }
+            }
+            if !self.showList {
+                xcodes.sort(by: {$0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build})
+            }
+        case .operatorAndVersion(let `operator`, let version):
+            xcodes = xcodes.filter {
+                switch `operator` {
+                case .equalTo:
+                    return $0.version == version
+                case .greaterThanOrEqualTo:
+                    return $0.version >= version
+                case .approximatelyGreaterThanOrEqualTo:
+                    return $0.version ~> version
+                case .greaterThan:
+                    return $0.version > version
+                case .lessThan:
+                    return $0.version > version
+                case .lessThanOrEqualTo:
+                    return $0.version <= version
+                }
+            }
+            if !self.showList {
+                xcodes.sort(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
+            }
+        }
         if self.showList {
             for xcode in xcodes.sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version}) {
                 print(xcode.name)
@@ -139,90 +203,14 @@ struct Main: ParsableCommand {
             }
             return
         }
-        let xcode: Xcode
-        switch self.specifier {
-        case .nil:
-            xcode =
-                xcodes.sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})[0]
-        case .error(let error):
-            throw error
-        case .build(let build):
-            guard
-                let _xcode =
-                    xcodes
-                    .sorted(by: {$0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build})
-                    .first(where: {$0.build == build})
-            else {
-                throw XcError.noSpecifiedXcodeAppFound
+        guard !xcodes.isEmpty
+        else {
+            if case .nil = self.specifier {
+                throw XcError.noXcodeAppFound
             }
-            xcode = _xcode
-        case .version(let version):
-            guard
-                let _xcode =
-                    xcodes
-                    .sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
-                    .first(where: {$0.version == version})
-            else {
-                throw XcError.noSpecifiedXcodeAppFound
-            }
-            xcode = _xcode
-        case .operatorAndBuild(let `operator`, let build):
-            // `~>` operator for Version.Build is not implemented yet
-            guard `operator` != .approximatelyGreaterThanOrEqualTo
-            else {
-                throw XcError.operationNotImplemented
-            }
-            guard
-                let _xcode =
-                    xcodes
-                    .sorted(by: {$0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build})
-                    .first(where: {
-                        switch `operator` {
-                        case .equalTo:
-                            return $0.build == build
-                        case .greaterThanOrEqualTo:
-                            return $0.build >= build
-                        case .approximatelyGreaterThanOrEqualTo:
-                            // not implemented
-                            return false
-                        case .greaterThan:
-                            return $0.build > build
-                        case .lessThan:
-                            return $0.build > build
-                        case .lessThanOrEqualTo:
-                            return $0.build <= build
-                        }
-                    })
-            else {
-                throw XcError.noSpecifiedXcodeAppFound
-            }
-            xcode = _xcode
-        case .operatorAndVersion(let `operator`, let version):
-            guard
-                let _xcode =
-                    xcodes
-                    .sorted(by: {$0.version == $1.version ? $0.build == $1.build ? $0.licenseType > $1.licenseType : $0.build > $1.build : $0.version > $1.version})
-                    .first(where: {
-                        switch `operator` {
-                        case .equalTo:
-                            return $0.version == version
-                        case .greaterThanOrEqualTo:
-                            return $0.version >= version
-                        case .approximatelyGreaterThanOrEqualTo:
-                            return $0.version ~> version
-                        case .greaterThan:
-                            return $0.version > version
-                        case .lessThan:
-                            return $0.version > version
-                        case .lessThanOrEqualTo:
-                            return $0.version <= version
-                        }
-                    })
-            else {
-                throw XcError.noSpecifiedXcodeAppFound
-            }
-            xcode = _xcode
+            throw XcError.noSpecifiedXcodeAppFound
         }
+        let xcode = xcodes[0]
         var arguments = ["-a", xcode.path]
         arguments.append(contentsOf: self.paths)
         let fileHandleWithNullDevice = FileHandle.nullDevice
