@@ -4,22 +4,41 @@ extension Xcode {
 
     public struct Build {
 
-        public var major: UInt
+        public var major: UInt {
+            willSet {
+                guard newValue > 0
+                else {
+                    self.major = 1
+                    return
+                }
+            }
+        }
+
         public var minor: Minor
-        public var patch: UInt
+
+        public var patch: UInt {
+            willSet {
+                guard newValue > 0
+                else {
+                    self.patch = 1
+                    return
+                }
+            }
+        }
+
         public var revision: Revision?
 
         public init(major: UInt = 1, minor: Minor = .a, patch: UInt = 1, revision: Revision? = nil) {
-            self.major = major
+            self.major = max(major, 1)
             self.minor = minor
-            self.patch = patch
+            self.patch = max(patch, 1)
             self.revision = revision
         }
 
         public init(_ major: UInt, _ minor: Minor = .a, _ patch: UInt = 1, _ revision: Revision? = nil) {
-            self.major = major
+            self.major = max(major, 1)
             self.minor = minor
-            self.patch = patch
+            self.patch = max(patch, 1)
             self.revision = revision
         }
 

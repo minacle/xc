@@ -6,7 +6,7 @@ import XcKit
 final class CustomStringConvertibleTests: XCTestCase {
 
     func testBuild() {
-        XCTAssertEqual(Xcode.Build().description, "1A1")
+        XCTAssertEqual(Xcode.Build(0).description, "1A1")
         XCTAssertEqual(Xcode.Build(2, .a, 30, .f).description, "2A30f")
         XCTAssertEqual(Xcode.Build(3, .c, 500).debugDescription, "3C500")
         XCTAssertEqual(Xcode.Build(4, .d, 5050, .g).debugDescription, "4D5050g")
