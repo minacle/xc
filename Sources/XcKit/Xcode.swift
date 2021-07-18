@@ -8,6 +8,14 @@ public struct Xcode {
     public var build: Build
     public var licenseType: LicenseType
 
+    public init(name: String, path: String, version: Version, build: Build, licenseType: LicenseType) {
+        self.name = name
+        self.path = path
+        self.version = version
+        self.build = build
+        self.licenseType = licenseType
+    }
+
     public init?(name: String, path: String, version: Version? = nil) {
         self.name = name
         self.path = path
