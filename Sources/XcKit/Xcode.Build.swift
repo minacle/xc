@@ -82,25 +82,6 @@ extension Xcode {
     }
 }
 
-extension Xcode.Build: Equatable {
-
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major == rhs.major &&
-            lhs.minor == rhs.minor &&
-            lhs.patch == rhs.patch &&
-            lhs.revision == rhs.revision
-    }
-
-    public static func !=(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major != rhs.major ||
-            lhs.minor != rhs.minor ||
-            lhs.patch != rhs.patch ||
-            lhs.revision != rhs.revision
-    }
-}
-
 extension Xcode.Build: Comparable {
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
@@ -130,6 +111,13 @@ extension Xcode.Build: Comparable {
     }
 }
 
+extension Xcode.Build: CustomDebugStringConvertible {
+
+    public var debugDescription: String {
+        return self.description
+    }
+}
+
 extension Xcode.Build: CustomStringConvertible {
 
     public var description: String {
@@ -142,10 +130,37 @@ extension Xcode.Build: CustomStringConvertible {
     }
 }
 
-extension Xcode.Build: CustomDebugStringConvertible {
+extension Xcode.Build: Equatable {
 
-    public var debugDescription: String {
-        return self.description
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+        return
+            lhs.major == rhs.major &&
+            lhs.minor == rhs.minor &&
+            lhs.patch == rhs.patch &&
+            lhs.revision == rhs.revision
+    }
+
+    public static func !=(lhs: Self, rhs: Self) -> Bool {
+        return
+            lhs.major != rhs.major ||
+            lhs.minor != rhs.minor ||
+            lhs.patch != rhs.patch ||
+            lhs.revision != rhs.revision
+    }
+}
+
+extension Xcode.Build: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        withUnsafeBytes(of: Self.self) {
+            hasher.combine(bytes: $0)
+        }
+        hasher.combine(self.major)
+        hasher.combine(self.minor)
+        hasher.combine(self.patch)
+        if let revision = self.revision {
+            hasher.combine(revision)
+        }
     }
 }
 

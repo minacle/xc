@@ -35,7 +35,13 @@ public struct Xcode {
 extension Xcode: Hashable {
 
     public func hash(into hasher: inout Hasher) {
+        withUnsafeBytes(of: Self.self) {
+            hasher.combine(bytes: $0)
+        }
         hasher.combine(self.name)
         hasher.combine(self.path)
+        hasher.combine(self.version)
+        hasher.combine(self.build)
+        hasher.combine(self.licenseType)
     }
 }

@@ -53,39 +53,6 @@ extension Xcode {
     }
 }
 
-extension Xcode.Version: Equatable {
-
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major == rhs.major &&
-            lhs.minor == rhs.minor &&
-            lhs.patch == rhs.patch
-    }
-}
-
-extension Xcode.Version: Comparable {
-
-    public static func <(lhs: Self, rhs: Self) -> Bool {
-        if lhs.major == rhs.major {
-            if lhs.minor == rhs.minor {
-                return lhs.patch ?? .min < rhs.patch ?? .min
-            }
-            return lhs.minor < rhs.minor
-        }
-        return lhs.major < rhs.major
-    }
-
-    public static func >(lhs: Self, rhs: Self) -> Bool {
-        if lhs.major == rhs.major {
-            if lhs.minor == rhs.minor {
-                return lhs.patch ?? .min > rhs.patch ?? .min
-            }
-            return lhs.minor > rhs.minor
-        }
-        return lhs.major > rhs.major
-    }
-}
-
 extension Xcode.Version {
 
     public static func ~>(lhs: Self, rhs: Self) -> Bool {
@@ -114,7 +81,37 @@ extension Xcode.Version {
     }
 }
 
-extension Xcode.Version: _ApproximatelyComparable {
+extension Xcode.Version: Comparable {
+
+    public static func <(lhs: Self, rhs: Self) -> Bool {
+        if lhs.major == rhs.major {
+            if lhs.minor == rhs.minor {
+                return lhs.patch ?? .min < rhs.patch ?? .min
+            }
+            return lhs.minor < rhs.minor
+        }
+        return lhs.major < rhs.major
+    }
+
+    public static func >(lhs: Self, rhs: Self) -> Bool {
+        if lhs.major == rhs.major {
+            if lhs.minor == rhs.minor {
+                return lhs.patch ?? .min > rhs.patch ?? .min
+            }
+            return lhs.minor > rhs.minor
+        }
+        return lhs.major > rhs.major
+    }
+}
+
+extension Xcode.Version: CustomDebugStringConvertible {
+
+    public var debugDescription: String {
+        if let patch = self.patch {
+            return "\(self.major).\(self.minor).\(patch)"
+        }
+        return "\(self.major).\(self.minor)"
+    }
 }
 
 extension Xcode.Version: CustomStringConvertible {
@@ -128,12 +125,29 @@ extension Xcode.Version: CustomStringConvertible {
     }
 }
 
-extension Xcode.Version: CustomDebugStringConvertible {
+extension Xcode.Version: Equatable {
 
-    public var debugDescription: String {
-        if let patch = self.patch {
-            return "\(self.major).\(self.minor).\(patch)"
-        }
-        return "\(self.major).\(self.minor)"
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+        return
+            lhs.major == rhs.major &&
+            lhs.minor == rhs.minor &&
+            lhs.patch == rhs.patch
     }
+}
+
+extension Xcode.Version: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        withUnsafeBytes(of: Self.self) {
+            hasher.combine(bytes: $0)
+        }
+        hasher.combine(self.major)
+        hasher.combine(self.minor)
+        if let patch = self.patch {
+            hasher.combine(patch)
+        }
+    }
+}
+
+extension Xcode.Version: _ApproximatelyComparable {
 }
