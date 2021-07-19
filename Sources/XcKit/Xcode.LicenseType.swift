@@ -21,10 +21,15 @@ extension Xcode {
 
 extension Xcode.LicenseType: Comparable {
 
-    private static let _order: [Self] = [.gm, .beta, .unknown]
+    private static let _ascendingOrder: [Self] = [.gm, .beta, .unknown]
+    private static let _descendingOrder: [Self] = [.beta, .gm, .unknown]
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
-        self._order.firstIndex(of: lhs)! < self._order.firstIndex(of: rhs)!
+        self._ascendingOrder.firstIndex(of: lhs)! < self._ascendingOrder.firstIndex(of: rhs)!
+    }
+
+    public static func >(lhs: Self, rhs: Self) -> Bool {
+        self._descendingOrder.lastIndex(of: lhs)! > self._descendingOrder.lastIndex(of: rhs)!
     }
 }
 
