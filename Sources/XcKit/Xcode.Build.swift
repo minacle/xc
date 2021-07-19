@@ -114,7 +114,7 @@ extension Xcode.Build: Comparable {
 extension Xcode.Build: CustomDebugStringConvertible {
 
     public var debugDescription: String {
-        return self.description
+        self.description
     }
 }
 
@@ -133,19 +133,17 @@ extension Xcode.Build: CustomStringConvertible {
 extension Xcode.Build: Equatable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major == rhs.major &&
-            lhs.minor == rhs.minor &&
-            lhs.patch == rhs.patch &&
-            lhs.revision == rhs.revision
+        lhs.major == rhs.major &&
+        lhs.minor == rhs.minor &&
+        lhs.patch == rhs.patch &&
+        lhs.revision == rhs.revision
     }
 
     public static func !=(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major != rhs.major ||
-            lhs.minor != rhs.minor ||
-            lhs.patch != rhs.patch ||
-            lhs.revision != rhs.revision
+        lhs.major != rhs.major ||
+        lhs.minor != rhs.minor ||
+        lhs.patch != rhs.patch ||
+        lhs.revision != rhs.revision
     }
 }
 
@@ -203,11 +201,11 @@ extension Xcode.Build.Minor: CaseIterable {
 extension Xcode.Build.Minor: Comparable {
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
-        return Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
+        Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
     }
 
     public static func >(lhs: Self, rhs: Self) -> Bool {
-        return Self.allCases.firstIndex(of: lhs)! > Self.allCases.firstIndex(of: rhs)!
+        Self.allCases.firstIndex(of: lhs)! > Self.allCases.firstIndex(of: rhs)!
     }
 }
 
@@ -250,11 +248,11 @@ extension Xcode.Build.Revision: CaseIterable {
 extension Xcode.Build.Revision: Comparable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return lhs.rawValue == rhs.rawValue
+        lhs.rawValue == rhs.rawValue
     }
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
-        return Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
+        Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
     }
 
     public static func <(lhs: Self?, rhs: Self) -> Bool {
@@ -274,7 +272,7 @@ extension Xcode.Build.Revision: Comparable {
     }
 
     public static func >(lhs: Self, rhs: Self) -> Bool {
-        return Self.allCases.firstIndex(of: lhs)! > Self.allCases.firstIndex(of: rhs)!
+        Self.allCases.firstIndex(of: lhs)! > Self.allCases.firstIndex(of: rhs)!
     }
 
     public static func >(lhs: Self?, rhs: Self) -> Bool {

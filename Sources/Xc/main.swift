@@ -17,7 +17,7 @@ enum XcError: String, Error {
 extension XcError {
 
     var localizedDescription: String {
-        return self.rawValue
+        self.rawValue
     }
 }
 
@@ -123,9 +123,7 @@ struct Main: ParsableCommand {
         else {
             throw XcError.noXcodeAppFound
         }
-        var xcodes: [Xcode] =
-            xc.xcodes
-            .filter({self.flag == .releaseOnly ? $0.licenseType == .gm : true})
+        var xcodes: [Xcode] = xc.xcodes.filter({self.flag == .releaseOnly ? $0.licenseType == .gm : true})
         switch self.specifier {
         case .nil:
             if !self.showList {

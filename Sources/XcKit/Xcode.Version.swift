@@ -128,10 +128,9 @@ extension Xcode.Version: CustomStringConvertible {
 extension Xcode.Version: Equatable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return
-            lhs.major == rhs.major &&
-            lhs.minor == rhs.minor &&
-            lhs.patch == rhs.patch
+        lhs.major == rhs.major &&
+        lhs.minor == rhs.minor &&
+        lhs.patch == rhs.patch
     }
 }
 

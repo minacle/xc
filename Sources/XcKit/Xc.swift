@@ -16,7 +16,7 @@ public final class Xc {
     private var _xcodes = Set<Xcode>()
 
     public var xcodes: Set<Xcode> {
-        return self._xcodes
+        self._xcodes
     }
 
     public init() {
