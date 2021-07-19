@@ -161,7 +161,7 @@ struct Main: ParsableCommand {
                 case .greaterThan:
                     return $0.build > build
                 case .lessThan:
-                    return $0.build > build
+                    return $0.build < build
                 case .lessThanOrEqualTo:
                     return $0.build <= build
                 }
@@ -181,7 +181,7 @@ struct Main: ParsableCommand {
                 case .greaterThan:
                     return $0.version > version
                 case .lessThan:
-                    return $0.version > version
+                    return $0.version < version
                 case .lessThanOrEqualTo:
                     return $0.version <= version
                 }
