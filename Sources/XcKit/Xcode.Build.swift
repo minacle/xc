@@ -205,6 +205,10 @@ extension Xcode.Build.Minor: Comparable {
     public static func <(lhs: Self, rhs: Self) -> Bool {
         return Self.allCases.firstIndex(of: lhs)! < Self.allCases.firstIndex(of: rhs)!
     }
+
+    public static func >(lhs: Self, rhs: Self) -> Bool {
+        return Self.allCases.firstIndex(of: lhs)! > Self.allCases.firstIndex(of: rhs)!
+    }
 }
 
 extension Xcode.Build {
