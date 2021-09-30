@@ -20,9 +20,21 @@ mint install minacle/xc
 
 ## usage
 
-    xc [-r|-gm|--release-only] [-l|--list] [-s|--specify <specifier>] [<paths> ...]
-    xc [-b|-beta|--allow-beta] [-l|--list] [-s|--specify <specifier>] [<paths> ...]
+    xc [-a|--all] [-s|--specify <specifier>] [<paths> ...]
+    xc [-b|--beta] [-s|--specify <specifier>] [<paths> ...]
+    xc [-r|--release] [-s|--specify <specifier>] [<paths> ...]
     xc [-h|--help]
+    xc list [-a|--all] [-s|--specify <specifier>]
+    xc list [-b|--beta] [-s|--specify <specifier>]
+    xc list [-r|--release] [-s|--specify <specifier>]
+    xc list [-h|--help]
+
+### subcommands
+
+- `open`
+  Open paths using most recent or specified version of Xcode app on the machine. _(default)_
+- `list`
+  List every or specified version of Xcode app(s) on the machine.
 
 ### arguments
 
@@ -34,12 +46,12 @@ mint install minacle/xc
 
 ### options
 
-- `-b`|`-beta`|`--allow-beta`  
-  Allow beta version.
-- `-r`|`-gm`|`--release-only`  
-  Disallow beta version. _(default)_
-- `-l`|`--list`  
-  List every found Xcode apps.
+- `-a`|`--all`  
+  Search both beta and release version.
+- `-b`|`--beta`  
+  Search only beta version.
+- `-r`|`--release`  
+  Search only release version. _(default)_
 - `-s <specifier>`|`--specify <specifier>`  
   Specify the build or version of Xcode to run.  
   To specify build 11E801a (for Xcode 11.7 GM), send `11E801a`.  
