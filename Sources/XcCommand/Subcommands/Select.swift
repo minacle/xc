@@ -28,7 +28,7 @@ extension XcCommand {
                 do {
                     try fileManager.removeItem(atPath: Self.link)
                 }
-                catch(let error as NSError) {
+                catch let error as NSError {
                     switch error.domain {
                     case NSCocoaErrorDomain:
                         switch error.code {
@@ -59,7 +59,7 @@ extension XcCommand {
             do {
                 try fileManager.createSymbolicLink(atPath: Self.link, withDestinationPath: "\(xcode.path)/Contents/Developer")
             }
-            catch(let error as NSError) {
+            catch let error as NSError {
                 switch error.domain {
                 case NSCocoaErrorDomain:
                     switch error.code {
