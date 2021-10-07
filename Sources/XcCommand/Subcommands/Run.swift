@@ -77,6 +77,9 @@ extension XcCommand {
                 else if applications.contains(command) {
                     command = "Applications/\(command)"
                 }
+                else {
+                    throw Error.commandOrApplicationNotFound(self.command)
+                }
             }
             else {
                 commandRelativePathStack.removeFirst()
