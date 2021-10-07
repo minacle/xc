@@ -13,14 +13,14 @@ extension XcCommand {
         @OptionGroup
         var specifierOptions: SpecifierOptions
 
-        // MARK: ParsableCommand
-
         @Argument
         var command: String
 
         @Argument(
             parsing: .unconditionalRemaining)
         var arguments: [String] = []
+
+        // MARK: ParsableCommand
 
         func run() throws {
             let xcodes = Xc.default.xcodes
