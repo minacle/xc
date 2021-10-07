@@ -11,6 +11,6 @@ extension XcCommand {
     static var configuration =
         CommandConfiguration(
             commandName: "xc",
-            subcommands: [List.self, Open.self, Select.self],
+            subcommands: [List.self, Open.self, Run.self, Select.self],
             defaultSubcommand: Open.self)
 }
