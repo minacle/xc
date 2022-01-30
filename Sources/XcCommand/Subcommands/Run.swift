@@ -13,11 +13,13 @@ extension XcCommand {
         @OptionGroup
         var specifierOptions: SpecifierOptions
 
-        @Argument
+        @Argument(
+            help: "The command or App to execute.")
         var command: String
 
         @Argument(
-            parsing: .unconditionalRemaining)
+            parsing: .unconditionalRemaining,
+            help: "Arguments to send to the command or App.")
         var arguments: [String] = []
 
         // MARK: ParsableCommand
