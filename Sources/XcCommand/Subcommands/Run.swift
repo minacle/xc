@@ -96,18 +96,19 @@ extension XcCommand {
             else if commandURLResourceValues.isExecutable == true {
                 var terminationStatus = 0
                 do {
-                    try await withCheckedThrowingContinuation {
-                        (continuation) in
-                        do {
-                            try Process.run(commandURL, arguments: arguments) {
-                                terminationStatus = .init($0.terminationStatus)
-                                continuation.resume()
+                    let _: Void =
+                        try await withCheckedThrowingContinuation {
+                            (continuation) in
+                            do {
+                                try Process.run(commandURL, arguments: arguments) {
+                                    terminationStatus = .init($0.terminationStatus)
+                                    continuation.resume()
+                                }
+                            }
+                            catch {
+                                continuation.resume(with: .failure(error))
                             }
                         }
-                        catch {
-                            continuation.resume(with: .failure(error))
-                        }
-                    }
                 }
                 catch {
                     throw Error.commandNotFound(self.command)
