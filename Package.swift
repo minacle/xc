@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 import PackageDescription
 
@@ -19,10 +19,10 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            .upToNextMajor(from: "1.0.2")),
+            .upToNextMajor(from: "1.1.2")),
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "XcCommand",
             dependencies: [
                 .product(
