@@ -6,7 +6,7 @@ import XcKit
 
 extension XcCommand {
 
-    struct Open: ParsableCommand {
+    struct Open: AsyncParsableCommand {
 
         @OptionGroup
         var licenseTypesOptions: LicenseTypesOptions
@@ -37,8 +37,9 @@ extension XcCommand {
 
         // MARK: ParsableCommand
 
-        func run() throws {
-            let xcodes = Xc.default.xcodes
+        func run() async throws {
+            let xc = Xc()
+            let xcodes = await xc.reload()
             guard !xcodes.isEmpty
             else {
                 throw Error.noXcodeAppFound
@@ -61,20 +62,10 @@ extension XcCommand {
             let workspace = NSWorkspace.shared
             let urls = paths.map({URL(fileURLWithPath: $0)})
             if urls.isEmpty {
-                let dsema = DispatchSemaphore(value: 0)
-                workspace.openApplication(at: xcode.url, configuration: configuration) {
-                    (_, _) in
-                    dsema.signal()
-                }
-                dsema.wait()
+                _ = try? await workspace.openApplication(at: xcode.url, configuration: configuration)
             }
             else {
-                let dsema = DispatchSemaphore(value: 0)
-                workspace.open(urls, withApplicationAt: xcode.url, configuration: configuration) {
-                    (_, _) in
-                    dsema.signal()
-                }
-                dsema.wait()
+                _ = try? await workspace.open(urls, withApplicationAt: xcode.url, configuration: configuration)
             }
         }
     }

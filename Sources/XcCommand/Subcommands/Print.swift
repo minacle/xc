@@ -3,7 +3,7 @@ import XcKit
 
 extension XcCommand {
 
-    struct Print: ParsableCommand {
+    struct Print: AsyncParsableCommand {
 
         @OptionGroup
         var licenseTypesOptions: LicenseTypesOptions
@@ -16,8 +16,9 @@ extension XcCommand {
 
         // MARK: ParsableCommand
 
-        func run() throws {
-            let xcodes = Xc.default.xcodes
+        func run() async throws {
+            let xc = Xc()
+            let xcodes = await xc.reload()
             guard !xcodes.isEmpty
             else {
                 throw Error.noXcodeAppFound

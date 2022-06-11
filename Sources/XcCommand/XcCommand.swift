@@ -1,8 +1,13 @@
 import ArgumentParser
 
+#if swift(>=5.6)
 @main
-struct XcCommand: ParsableCommand {
+struct XcCommand: AsyncParsableCommand {
 }
+#else
+struct XcCommand: AsyncParsableCommand {
+}
+#endif
 
 extension XcCommand {
 

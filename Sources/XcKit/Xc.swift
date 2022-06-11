@@ -6,9 +6,6 @@ import Foundation
 
 public final class Xc {
 
-    public class var `default`: Self {
-        return unsafeDowncast(_defaultXcInstance, to: self)
-    }
     private let _query: NSMetadataQuery = .init()
     private let _dsema: DispatchSemaphore = .init(value: 0)
     private let _operationQueue: OperationQueue
@@ -124,8 +121,6 @@ public final class Xc {
 #endif
     }
 }
-
-private let _defaultXcInstance = Xc(reload: true)
 
 extension Xc {
 

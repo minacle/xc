@@ -5,7 +5,7 @@ import XcKit
 
 extension XcCommand {
 
-    struct Run: ParsableCommand {
+    struct Run: AsyncParsableCommand {
 
         @OptionGroup
         var licenseTypesOptions: LicenseTypesOptions
@@ -24,8 +24,9 @@ extension XcCommand {
 
         // MARK: ParsableCommand
 
-        func run() throws {
-            let xcodes = Xc.default.xcodes
+        func run() async throws {
+            let xc = Xc()
+            let xcodes = await xc.reload()
             guard !xcodes.isEmpty
             else {
                 throw Error.noXcodeAppFound
@@ -87,30 +88,30 @@ extension XcCommand {
             let commandURL = URL(fileURLWithPath: "\(developerPath)/\(command)")
             let commandURLResourceValues = try! commandURL.resourceValues(forKeys: [.isApplicationKey, .isExecutableKey])
             if commandURLResourceValues.isApplication == true {
-                let dsema = DispatchSemaphore(value: 0)
                 let openConfiguration = NSWorkspace.OpenConfiguration()
                 openConfiguration.arguments = arguments
-                NSWorkspace.shared.openApplication(at: commandURL, configuration: openConfiguration) {
-                    (_, _) in
-                    dsema.signal()
-                }
-                dsema.wait()
+                _ = try? await NSWorkspace.shared.openApplication(at: commandURL, configuration: openConfiguration)
                 throw ExitCode.success
             }
             else if commandURLResourceValues.isExecutable == true {
                 var terminationStatus = 0
-                let dsema = DispatchSemaphore(value: 0)
                 do {
-                    try Process.run(commandURL, arguments: arguments) {
-                        process in
-                        terminationStatus = .init(process.terminationStatus)
-                        dsema.signal()
+                    try await withCheckedThrowingContinuation {
+                        (continuation) in
+                        do {
+                            try Process.run(commandURL, arguments: arguments) {
+                                terminationStatus = .init($0.terminationStatus)
+                                continuation.resume()
+                            }
+                        }
+                        catch {
+                            continuation.resume(with: .failure(error))
+                        }
                     }
                 }
                 catch {
                     throw Error.commandNotFound(self.command)
                 }
-                dsema.wait()
                 throw ExitCode(.init(terminationStatus))
             }
             throw Error.commandOrApplicationNotFound(self.command)

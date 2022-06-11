@@ -3,7 +3,7 @@ import XcKit
 
 extension XcCommand {
 
-    struct List: ParsableCommand {
+    struct List: AsyncParsableCommand {
 
         @OptionGroup
         var licenseTypesOptions: LicenseTypesOptions
@@ -13,10 +13,12 @@ extension XcCommand {
 
         // MARK: ParsableCommand
 
-        func run() throws {
+        func run() async throws {
+            let xc = Xc()
+            await xc.reload()
             let licenseTypes = licenseTypesOptions.licenseTypes
             let specifier = specifierOptions.specifier
-            let xcodes = Xc.default.xcodes.filter(licenseTypes: licenseTypes).filter(specifier: specifier).sorted(specifier: specifier)
+            let xcodes = xc.xcodes.filter(licenseTypes: licenseTypes).filter(specifier: specifier).sorted(specifier: specifier)
             for xcode in xcodes {
                 print(xcode.name)
                 if case .gm = xcode.licenseType {
