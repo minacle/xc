@@ -53,3 +53,13 @@ extension Xcode.LicenseType: CustomStringConvertible {
         return self.rawValue
     }
 }
+
+extension Xcode.LicenseType: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        withUnsafeBytes(of: Self.self) {
+            hasher.combine(bytes: $0)
+        }
+        hasher.combine(self.rawValue)
+    }
+}
