@@ -20,36 +20,86 @@ extension Xcode {
             self.patch = patch
         }
 
-        private static let _regex =
-            try! NSRegularExpression(pattern: "^(\\d+)\\.(\\d+)(?:\\.(\\d+))?$")
-
         public init?(string: String) {
-            let nsString = string as NSString
-            if let match = Self._regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
-                var range: NSRange
-                range = match.range(at: 1)
-                if range.location != NSNotFound {
-                    self.major = UInt(nsString.substring(with: range))!
-                }
-                else {
-                    return nil
-                }
-                range = match.range(at: 2)
-                if range.location != NSNotFound {
-                    self.minor = UInt(nsString.substring(with: range))!
-                }
-                else {
-                    return nil
-                }
-                range = match.range(at: 3)
-                if range.location != NSNotFound {
-                    self.patch = UInt(nsString.substring(with: range))!
-                }
+            if #available(macOS 13, *),
+               let version = Self.init(engine: .swift, string: string)
+            {
+                self = version
+            }
+            else {
+                self.init(engine: .foundation, string: string)
+            }
+        }
+    }
+}
+
+@available(macOS, deprecated: 13)
+extension Xcode.Version {
+
+    private enum _Foundation {
+
+        case foundation
+    }
+
+    private static let _nsRegex =
+        try! NSRegularExpression(pattern: "^(\\d+)\\.(\\d+)(?:\\.(\\d+))?$")
+
+    private init?(engine _: _Foundation, string: String) {
+        let nsString = string as NSString
+        if let match = Self._nsRegex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
+            var range: NSRange
+            range = match.range(at: 1)
+            if range.location != NSNotFound {
+                self.major = UInt(nsString.substring(with: range))!
             }
             else {
                 return nil
             }
+            range = match.range(at: 2)
+            if range.location != NSNotFound {
+                self.minor = UInt(nsString.substring(with: range))!
+            }
+            else {
+                return nil
+            }
+            range = match.range(at: 3)
+            if range.location != NSNotFound {
+                self.patch = UInt(nsString.substring(with: range))!
+            }
         }
+        else {
+            return nil
+        }
+    }
+}
+
+@available(macOS, introduced: 13)
+extension Xcode.Version {
+
+    private enum _Swift {
+
+        case swift
+    }
+
+#if swift(>=5.7) && canImport(_StringProcessing)
+    private static let _regex =
+        #/^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$/#
+#endif
+
+    private init?(engine _: _Swift, string: String) {
+#if swift(>=5.7) && canImport(_StringProcessing)
+        guard let match = try? Self._regex.firstMatch(in: string)
+        else {
+            return nil
+        }
+        self.major = .init(match.output.major)!
+        self.minor = .init(match.output.minor)!
+        if let patch = match.output.patch {
+            self.patch = .init(patch)!
+        }
+#else
+        return nil
+#endif
     }
 }
 

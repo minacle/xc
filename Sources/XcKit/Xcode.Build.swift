@@ -42,43 +42,94 @@ extension Xcode {
             self.revision = revision
         }
 
-        private static let _regex =
-            try! NSRegularExpression(pattern: "^([1-9][0-9]*)([A-Z])([1-9][0-9]*)([a-z])?$")
-
         public init?(string: String) {
-            let nsString = string as NSString
-            if let match = Self._regex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
-                var range: NSRange
-                range = match.range(at: 1)
-                if range.location != NSNotFound {
-                    self.major = UInt(nsString.substring(with: range))!
-                }
-                else {
-                    return nil
-                }
-                range = match.range(at: 2)
-                if range.location != NSNotFound {
-                    self.minor = Minor(rawValue: nsString.substring(with: range).first!)!
-                }
-                else {
-                    return nil
-                }
-                range = match.range(at: 3)
-                if range.location != NSNotFound {
-                    self.patch = UInt(nsString.substring(with: range))!
-                }
-                else {
-                    return nil
-                }
-                range = match.range(at: 4)
-                if range.location != NSNotFound {
-                    self.revision = Revision(rawValue: nsString.substring(with: range).first!)!
-                }
+            if #available(macOS 13, *),
+               let build = Self.init(engine: .swift, string: string)
+            {
+                self = build
+            }
+            else {
+                self.init(engine: .foundation, string: string)
+            }
+        }
+    }
+}
+
+@available(macOS, deprecated: 13)
+extension Xcode.Build {
+
+    private enum _Foundation {
+
+        case foundation
+    }
+
+    private static let _nsRegex =
+        try! NSRegularExpression(pattern: "^([1-9][0-9]*)([A-Z])([1-9][0-9]*)([a-z])?$")
+
+    private init?(engine _: _Foundation, string: String) {
+        let nsString = string as NSString
+        if let match = Self._nsRegex.firstMatch(in: string, range: NSRange(location: 0, length: nsString.length)) {
+            var range: NSRange
+            range = match.range(at: 1)
+            if range.location != NSNotFound {
+                self.major = .init(nsString.substring(with: range))!
             }
             else {
                 return nil
             }
+            range = match.range(at: 2)
+            if range.location != NSNotFound {
+                self.minor = .init(nsString.substring(with: range))!
+            }
+            else {
+                return nil
+            }
+            range = match.range(at: 3)
+            if range.location != NSNotFound {
+                self.patch = .init(nsString.substring(with: range))!
+            }
+            else {
+                return nil
+            }
+            range = match.range(at: 4)
+            if range.location != NSNotFound {
+                self.revision = .init(nsString.substring(with: range))!
+            }
         }
+        else {
+            return nil
+        }
+    }
+}
+
+@available(macOS, introduced: 13)
+extension Xcode.Build {
+
+    private enum _Swift {
+
+        case swift
+    }
+
+#if swift(>=5.7) && canImport(_StringProcessing)
+    private static let _regex =
+        #/^(?<major>[1-9][0-9]*)(?<minor>[A-Z])(?<patch>[1-9][0-9]*)(?<revision>[a-z])?$/#
+#endif
+
+    private init?(engine _: _Swift, string: String) {
+#if swift(>=5.7) && canImport(_StringProcessing)
+        guard let match = try? Self._regex.firstMatch(in: string)
+        else {
+            return nil
+        }
+        self.major = .init(match.output.major)!
+        self.minor = .init(match.output.minor)!
+        self.patch = .init(match.output.patch)!
+        if let revision = match.output.revision {
+            self.revision = .init(revision)!
+        }
+#else
+        return nil
+#endif
     }
 }
 
@@ -195,6 +246,18 @@ extension Xcode.Build {
     }
 }
 
+extension Xcode.Build.Minor {
+
+    fileprivate init?<S>(_ rawValue: S)
+    where S: StringProtocol {
+        guard let rawValue = rawValue.first
+        else {
+            return nil
+        }
+        self.init(rawValue: rawValue)
+    }
+}
+
 extension Xcode.Build.Minor: CaseIterable {
 }
 
@@ -239,6 +302,18 @@ extension Xcode.Build {
         case x = "x"
         case y = "y"
         case z = "z"
+    }
+}
+
+extension Xcode.Build.Revision {
+
+    fileprivate init?<S>(_ rawValue: S)
+    where S: StringProtocol {
+        guard let rawValue = rawValue.first
+        else {
+            return nil
+        }
+        self.init(rawValue: rawValue)
     }
 }
 
