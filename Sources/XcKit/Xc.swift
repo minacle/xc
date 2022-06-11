@@ -31,11 +31,12 @@ public final class Xc {
         let query = self._query
         query.operationQueue = operationQueue
         let predicateString =
-            String(format: "(%@ == %@) && (%@ == %@)",
-                   NSMetadataItemContentTypeKey,
-                   "'com.apple.application-bundle'",
-                   NSMetadataItemCFBundleIdentifierKey,
-                   "'com.apple.dt.Xcode'")
+            String(
+                format: "(%@ == %@) && (%@ == %@)",
+                NSMetadataItemContentTypeKey,
+                #""com.apple.application-bundle""#,
+                NSMetadataItemCFBundleIdentifierKey,
+                #""com.apple.dt.Xcode""#)
         query.predicate = .init(fromMetadataQueryString: predicateString)
         query.valueListAttributes = [NSMetadataItemPathKey]
     }
