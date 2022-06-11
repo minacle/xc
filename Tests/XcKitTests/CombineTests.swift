@@ -1,10 +1,12 @@
+#if canImport(Combine)
 import Combine
+#endif
 import XCTest
 
 @testable
 import XcKit
 
-final class CombineTest: XCTestCase {
+final class CombineTests: XCTestCase {
 
     private var xcodes: Set<Xcode>? {
         didSet {
@@ -24,7 +26,8 @@ final class CombineTest: XCTestCase {
         self.xcodesDidSetHandler = nil
     }
 
-    func testSink() {
+    func testSink() throws {
+#if canImport(Combine)
         let xc = Xc()
         let publisher = xc.reload()
         let dsema = DispatchSemaphore(value: 0)
@@ -41,9 +44,13 @@ final class CombineTest: XCTestCase {
             subscriber.cancel()
             XCTFail("Timed out")
         }
+#else
+        try XCTSkip()
+#endif
     }
 
-    func testAssign() {
+    func testAssign() throws {
+#if canImport(Combine)
         let xc = Xc()
         let publisher = xc.reload()
         let dsema = DispatchSemaphore(value: 0)
@@ -61,5 +68,8 @@ final class CombineTest: XCTestCase {
             subscriber.cancel()
             XCTFail("Timed out")
         }
+#else
+        try XCTSkip()
+#endif
     }
 }
