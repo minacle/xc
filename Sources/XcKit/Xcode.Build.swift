@@ -173,10 +173,10 @@ extension Xcode.Build: CustomStringConvertible {
 
     public var description: String {
         if let revision = self.revision {
-            return "\(self.major)\(self.minor.rawValue)\(self.patch)\(revision.rawValue)"
+            return "\(self.major)\(self.minor)\(self.patch)\(revision)"
         }
         else {
-            return "\(self.major)\(self.minor.rawValue)\(self.patch)"
+            return "\(self.major)\(self.minor)\(self.patch)"
         }
     }
 }
@@ -272,6 +272,13 @@ extension Xcode.Build.Minor: Comparable {
     }
 }
 
+extension Xcode.Build.Minor: CustomStringConvertible {
+
+    public var description: String {
+        .init(describing: self.rawValue)
+    }
+}
+
 extension Xcode.Build {
 
     public enum Revision: Character {
@@ -364,6 +371,13 @@ extension Xcode.Build.Revision: Comparable {
             return false
         }
         return lhs > rhs
+    }
+}
+
+extension Xcode.Build.Revision: CustomStringConvertible {
+
+    public var description: String {
+        .init(describing: self.rawValue)
     }
 }
 
