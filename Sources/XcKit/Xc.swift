@@ -1,4 +1,7 @@
+#if canImport(Combine)
 import Combine
+#endif
+import Dispatch
 import Foundation
 
 public final class Xc {
@@ -6,55 +9,70 @@ public final class Xc {
     public class var `default`: Self {
         return unsafeDowncast(_defaultXcInstance, to: self)
     }
+    private let _query: NSMetadataQuery = .init()
+    private let _dsema: DispatchSemaphore = .init(value: 0)
+    private let _operationQueue: OperationQueue
+    private lazy var _observer: _Observer = .init(owner: self)
 
-    private let _query = NSMetadataQuery()
-    private let _dsema = DispatchSemaphore(value: 0)
-    private lazy var _observer = _Observer(owner: self)
-    private var _subscribers = Set<AnyCancellable>(minimumCapacity: 1)
+#if canImport(Combine)
+    private var _subscribers: Set<AnyCancellable> = .init(minimumCapacity: 1)
     private var _xcodesPublisher: AnyPublisher<Set<Xcode>, Never>?
+#endif
 
-    private var _xcodes = Set<Xcode>()
+    private var _xcodes: Set<Xcode> = .init()
 
     public var xcodes: Set<Xcode> {
         self._xcodes
     }
 
-    public init() {
-        self._query.operationQueue = OperationQueue()
+    public init(operationQueue: OperationQueue = .init()) {
+        self._operationQueue = .init()
+        self._operationQueue.maxConcurrentOperationCount = 1
+        let query = self._query
+        query.operationQueue = operationQueue
         let predicateString =
             String(format: "(%@ == %@) && (%@ == %@)",
                    NSMetadataItemContentTypeKey,
                    "'com.apple.application-bundle'",
                    NSMetadataItemCFBundleIdentifierKey,
                    "'com.apple.dt.Xcode'")
-        self._query.predicate = NSPredicate(fromMetadataQueryString: predicateString)
-        self._query.valueListAttributes = [NSMetadataItemPathKey]
+        query.predicate = .init(fromMetadataQueryString: predicateString)
+        query.valueListAttributes = [NSMetadataItemPathKey]
     }
 
-    public convenience init(reload: Bool, operationQueue: OperationQueue? = nil) {
-        self.init()
-        if let operationQueue = operationQueue {
-            self._query.operationQueue = operationQueue
-        }
-        if reload {
+    public func reload(completionHandler: @escaping (Set<Xcode>) -> Void) {
+        let query = self._query
+        if !query.isStarted {
             _defaultNotificationCenter.addObserver(
                 self._observer,
-                selector: #selector(self._observer.metadataQueryDidFinishGathering(_:)),
+                selector: #selector(_Observer.metadataQueryDidFinishGathering(_:)),
                 name: .NSMetadataQueryDidFinishGathering,
                 object: nil)
-            let query = self._query
             query.operationQueue.unsafelyUnwrapped.addOperation {
-                query.start()
+                self._query.start()
             }
-            self._dsema.wait()
+            self._operationQueue.addOperation {
+                self._dsema.wait()
+            }
+        }
+        self._operationQueue.addOperation {
+            completionHandler(self._xcodes)
         }
     }
 
-    public convenience init(operationQueue: OperationQueue) {
-        self.init()
-        self._query.operationQueue = operationQueue
+#if swift(>=5.5) && canImport(_Concurrency)
+    @discardableResult
+    public func reload() async -> Set<Xcode> {
+        await withCheckedContinuation {
+            (continuation) in
+            self.reload {
+                continuation.resume(returning: $0)
+            }
+        }
     }
+#endif
 
+#if canImport(Combine)
     public func reload() -> AnyPublisher<Set<Xcode>, Never> {
         if self._subscribers.isEmpty {
             let metadataQueryDidFinishGatheringNotificationPublisher =
@@ -70,7 +88,6 @@ public final class Xc {
         else {
             let futurePublisher =
                 Future<Set<Xcode>, Never> {
-                    (promise) in
                     let query = self._query
                     if !query.isStarted {
                         query.operationQueue.unsafelyUnwrapped.addOperation {
@@ -82,7 +99,7 @@ public final class Xc {
                         self._xcodesPublisher = nil
                     }
                     self._dsema.wait()
-                    promise(.success(self.xcodes))
+                    $0(.success(self.xcodes))
                 }
                 .share()
             xcodesPublisher =
@@ -92,6 +109,7 @@ public final class Xc {
         }
         return xcodesPublisher
     }
+#endif
 
     deinit {
         _defaultNotificationCenter.removeObserver(
@@ -99,8 +117,10 @@ public final class Xc {
             name: nil,
             object: nil)
         self._query.stop()
+#if canImport(Combine)
         self._subscribers.removeAll()
         self._xcodesPublisher = nil
+#endif
     }
 }
 
