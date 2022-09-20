@@ -33,14 +33,16 @@ extension XcCommand {
             }
             let licenseTypes = licenseTypesOptions.licenseTypes
             let specifier = specifierOptions.specifier
-            guard let xcode = xcodes.filter(licenseTypes: licenseTypes).filter(specifier: specifier).sorted(specifier: specifier).first
+            guard
+                let xcode =
+                    xcodes
+                    .filter(licenseTypes: licenseTypes)
+                    .filter(specifier: specifier)
+                    .sorted(specifier: specifier)
+                    .first
             else {
                 throw Error.noSpecifiedXcodeAppFound
             }
-            let developerPath = "\(xcode.path)/Contents/Developer"
-            let fileManager = FileManager.default
-            let applications = try! fileManager.contentsOfDirectory(atPath: "\(developerPath)/Applications")
-            let commands = try! fileManager.contentsOfDirectory(atPath: "\(developerPath)/usr/bin")
             var commandRelativePathStack = [String]()
             var command = command
             while true {
@@ -73,49 +75,99 @@ extension XcCommand {
             if let separatorIndex = command.lastIndex(of: "/") {
                 command.removeSubrange(separatorIndex...)
             }
+            let commandURL: URL?
+            let applicationURL: URL?
+        urlAssignment:
             if commandRelativePathStack.isEmpty {
-                if commands.contains(command) {
-                    command = "usr/bin/\(command)"
+                let commands = xcode.binURLs
+                let applications = xcode.applicationURLs
+                if
+                    let url =
+                        commands
+                        .first(where: {$0.lastPathComponent == command})
+                {
+                    commandURL = url
+                    applicationURL = nil
                 }
-                else if applications.contains(command) {
-                    command = "Applications/\(command)"
+                else if
+                    let url =
+                        applications
+                        .first(where: {$0.lastPathComponent == command})
+                {
+                    commandURL = nil
+                    applicationURL = url
+                }
+                else {
+                    let commands =
+                        xcode.binURLs(
+                            forToolchainURL: xcode.defaultToolchainURL)
+                    if
+                        let url =
+                            commands
+                            .first(where: {$0.lastPathComponent == command})
+                    {
+                        commandURL = url
+                        applicationURL = nil
+                        break urlAssignment
+                    }
+                    throw Error.commandOrApplicationNotFound(self.command)
                 }
             }
             else {
                 commandRelativePathStack.removeFirst()
-                command = "\(commandRelativePathStack.joined(separator: "/"))/\(command)"
+                commandURL =
+                    xcode.developerDirectoryURL
+                    .appendingPathComponent("\(commandRelativePathStack.joined(separator: "/"))/\(command)")
+                applicationURL = nil
             }
-            let commandURL = URL(fileURLWithPath: "\(developerPath)/\(command)")
-            let commandURLResourceValues = try! commandURL.resourceValues(forKeys: [.isApplicationKey, .isExecutableKey])
-            if commandURLResourceValues.isApplication == true {
-                let openConfiguration = NSWorkspace.OpenConfiguration()
-                openConfiguration.arguments = arguments
-                _ = try? await NSWorkspace.shared.openApplication(at: commandURL, configuration: openConfiguration)
-                throw ExitCode.success
-            }
-            else if commandURLResourceValues.isExecutable == true {
-                var terminationStatus = 0
-                do {
-                    let _: Void =
-                        try await withCheckedThrowingContinuation {
-                            (continuation) in
-                            do {
-                                try Process.run(commandURL, arguments: arguments) {
-                                    terminationStatus = .init($0.terminationStatus)
-                                    continuation.resume()
-                                }
-                            }
-                            catch {
-                                continuation.resume(with: .failure(error))
-                            }
-                        }
-                }
-                catch {
+            if let commandURL {
+                guard
+                    let commandURLResourceValues =
+                        commandURL
+                        .resourceValues(forKeys: [.isExecutableKey]),
+                    commandURLResourceValues.isExecutable == true
+                else {
                     throw Error.commandNotFound(self.command)
                 }
-                throw ExitCode(.init(terminationStatus))
+                var terminationStatus = 0 as Int32
+                try! await withCheckedThrowingContinuation {
+                    (continuation) in
+                    do {
+                        try Process.run(commandURL, arguments: arguments) {
+                            terminationStatus = $0.terminationStatus
+                            continuation.resume()
+                        }
+                    }
+                    catch {
+                        continuation.resume(with: .failure(error))
+                    }
+                }
+                throw ExitCode(terminationStatus)
             }
-            throw Error.commandOrApplicationNotFound(self.command)
+            else if let applicationURL {
+                guard
+                    let applicationURLResourceValues =
+                        applicationURL
+                        .resourceValues(forKeys: [.isApplicationKey]),
+                    applicationURLResourceValues.isApplication == true
+                else {
+                    throw Error.commandOrApplicationNotFound(self.command)
+                }
+                let openConfiguration = NSWorkspace.OpenConfiguration()
+                openConfiguration.arguments = arguments
+                do {
+                    _ = try await NSWorkspace.shared
+                        .openApplication(
+                            at: applicationURL,
+                            configuration: openConfiguration)
+                }
+                catch {
+                    throw ExitCode.failure
+                }
+            }
+            else {
+                fatalError()
+            }
         }
     }
 }
