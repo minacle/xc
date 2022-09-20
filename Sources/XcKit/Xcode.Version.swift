@@ -81,13 +81,13 @@ extension Xcode.Version {
         case swift
     }
 
-#if swift(>=5.7) && canImport(_StringProcessing)
+#if canImport(_StringProcessing)
     private static let _regex =
         #/^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$/#
 #endif
 
     private init?(engine _: _Swift, string: String) {
-#if swift(>=5.7) && canImport(_StringProcessing)
+#if canImport(_StringProcessing)
         guard let match = try? Self._regex.firstMatch(in: string)
         else {
             return nil

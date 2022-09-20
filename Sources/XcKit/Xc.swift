@@ -80,7 +80,7 @@ public final class Xc {
             .store(in: &self._subscribers)
         }
         let xcodesPublisher: AnyPublisher<Set<Xcode>, Never>
-        if let _xcodesPublisher = self._xcodesPublisher {
+        if let _xcodesPublisher {
             xcodesPublisher = _xcodesPublisher
         }
         else {
