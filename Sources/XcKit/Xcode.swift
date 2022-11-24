@@ -19,6 +19,13 @@ public struct Xcode {
     public init?(name: String, path: String, version: Version? = nil) {
         self.name = name
         self.path = path
+        do {  // Opt-out if it is in trash directory
+            var relationship: FileManager.URLRelationship = .other
+            try? FileManager.default.getRelationship(&relationship, of: .trashDirectory, in: .allDomainsMask, toItemAt: .init(fileURLWithPath: path, isDirectory: true))
+            if case .contains = relationship {
+                return nil
+            }
+        }
         let versionPList = (try? PropertyListSerialization.propertyList(from: Data(contentsOf: URL(fileURLWithPath: "\(self.path)/Contents/version.plist")), format: nil) as? [String: Any]) ?? [:]
         if var version = version {
             if version.patch == nil {
