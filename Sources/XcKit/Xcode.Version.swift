@@ -83,7 +83,7 @@ extension Xcode.Version {
 
 #if canImport(_StringProcessing)
     private static let _regex =
-        #/^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$/#
+        #/^(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?$/#
 #endif
 
     private init?(engine _: _Swift, string: String) {
