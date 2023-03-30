@@ -1,5 +1,6 @@
 import AppKit
 import ArgumentParser
+import Atomics
 import Foundation
 import XcKit
 
@@ -18,7 +19,7 @@ extension XcCommand {
         var command: String
 
         @Argument(
-            parsing: .unconditionalRemaining,
+            parsing: .captureForPassthrough,
             help: "Arguments to send to the command or App.")
         var arguments: [String] = []
 
@@ -32,7 +33,11 @@ extension XcCommand {
                 throw Error.noXcodeAppFound
             }
             let licenseTypes = licenseTypesOptions.licenseTypes
-            let specifier = specifierOptions.specifier
+            var specifier = specifierOptions.specifier
+            if case .nil = specifier {
+                let xcodeVersion = (try? XcodeVersion.string) ?? .init()
+                specifier = try .init(expressionString: xcodeVersion)
+            }
             guard
                 let xcode =
                     xcodes
@@ -129,12 +134,14 @@ extension XcCommand {
                 else {
                     throw Error.commandNotFound(self.command)
                 }
-                var terminationStatus = 0 as Int32
+                let terminationStatus = ManagedAtomic<Int32>(0)
                 try! await withCheckedThrowingContinuation {
                     (continuation) in
                     do {
                         try Process.run(commandURL, arguments: arguments) {
-                            terminationStatus = $0.terminationStatus
+                            terminationStatus.store(
+                                $0.terminationStatus,
+                                ordering: .releasing)
                             continuation.resume()
                         }
                     }
@@ -142,7 +149,7 @@ extension XcCommand {
                         continuation.resume(with: .failure(error))
                     }
                 }
-                throw ExitCode(terminationStatus)
+                throw ExitCode(terminationStatus.load(ordering: .acquiring))
             }
             else if let applicationURL {
                 guard
