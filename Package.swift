@@ -19,7 +19,10 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            .upToNextMajor(from: "1.1.4")),
+            .upToNextMajor(from: "1.2.2")),
+        .package(
+            url: "https://github.com/apple/swift-atomics",
+            .upToNextMajor(from: "1.0.3")),
     ],
     targets: [
         .executableTarget(
@@ -28,6 +31,9 @@ let package = Package(
                 .product(
                     name: "ArgumentParser",
                     package: "swift-argument-parser"),
+                .product(
+                    name: "Atomics",
+                    package: "swift-atomics"),
                 .target(name: "XcKit"),
             ]),
         .target(name: "XcKit"),
