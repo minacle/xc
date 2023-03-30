@@ -29,11 +29,14 @@ enum Specifier {
                 self = .build(build)
             }
         }
-        else if let version = Xcode.Version(string: string) {
+        else if var version = Xcode.Version(string: string) {
             if let `operator` = `operator` {
                 self = .operatorAndVersion(`operator`, version)
             }
             else {
+                if version.patch == nil {
+                    version.patch = 0
+                }
                 self = .version(version)
             }
         }
