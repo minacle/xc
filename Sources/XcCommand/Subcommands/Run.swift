@@ -36,7 +36,9 @@ extension XcCommand {
             var specifier = specifierOptions.specifier
             if case .nil = specifier {
                 let xcodeVersion = (try? XcodeVersion.string) ?? .init()
-                specifier = try .init(expressionString: xcodeVersion)
+                if !xcodeVersion.isEmpty {
+                    specifier = try .init(expressionString: xcodeVersion)
+                }
             }
             guard
                 let xcode =
