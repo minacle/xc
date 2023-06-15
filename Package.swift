@@ -22,7 +22,7 @@ let package = Package(
             .upToNextMajor(from: "1.2.2")),
         .package(
             url: "https://github.com/apple/swift-atomics",
-            .upToNextMajor(from: "1.0.3")),
+            .upToNextMajor(from: "1.1.0")),
     ],
     targets: [
         .executableTarget(
