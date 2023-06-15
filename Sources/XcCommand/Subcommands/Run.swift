@@ -140,12 +140,17 @@ extension XcCommand {
                 try! await withCheckedThrowingContinuation {
                     (continuation) in
                     do {
-                        try Process.run(commandURL, arguments: arguments) {
+                        let process = Process()
+                        process.executableURL = commandURL
+                        process.arguments = arguments
+                        process.qualityOfService = .userInitiated
+                        process.terminationHandler = {
                             terminationStatus.store(
                                 $0.terminationStatus,
                                 ordering: .releasing)
                             continuation.resume()
                         }
+                        try process.run()
                     }
                     catch {
                         continuation.resume(with: .failure(error))
