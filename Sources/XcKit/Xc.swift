@@ -58,7 +58,7 @@ public final class Xc {
         }
     }
 
-#if swift(>=5.5) && canImport(_Concurrency)
+#if canImport(_Concurrency)
     @discardableResult
     public func reload() async -> Set<Xcode> {
         await withCheckedContinuation {
