@@ -1,6 +1,8 @@
 import AppKit
 import ArgumentParser
 import Atomics
+import Darwin.POSIX.sys.types
+import Darwin.POSIX.unistd
 import Foundation
 import XcKit
 
@@ -151,6 +153,11 @@ extension XcCommand {
                             continuation.resume()
                         }
                         try process.run()
+                        // Workaround for interactive commands.
+                        // See https://stackoverflow.com/a/76088357
+                        tcsetpgrp(
+                            .init(FileHandle.standardInput.fileDescriptor),
+                            .init(process.processIdentifier))
                     }
                     catch {
                         continuation.resume(with: .failure(error))
